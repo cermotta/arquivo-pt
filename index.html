@@ -75,42 +75,31 @@ document.getElementById('shareButton').addEventListener('click',async()=>{
  try{if(navigator.share){await navigator.share(shareData)}else if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(shareData.url);alert('Link copiado! Pode compartilhar onde quiser.')}else{const t=document.createElement('textarea');t.value=shareData.url;document.body.appendChild(t);t.select();document.execCommand('copy');t.remove();alert('Link copiado! Pode compartilhar onde quiser.')}}catch(e){if(e.name!=='AbortError')alert('Não foi possível compartilhar automaticamente. Copie o link do navegador.')}
 });
 </script>
-<!-- CONTADOR GLOBAL: configure os valores do Firebase abaixo para ativar visitas e pessoas online reais. -->
-<script type="module">
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js';
-import { getDatabase, ref, onValue, runTransaction, push, onDisconnect, set, remove, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js';
-const firebaseConfig = {
-  apiKey: 'COLOQUE_SUA_API_KEY',
-  authDomain: 'COLOQUE_SEU_PROJETO.firebaseapp.com',
-  databaseURL: 'https://COLOQUE_SEU_PROJETO-default-rtdb.firebaseio.com',
-  projectId: 'COLOQUE_SEU_PROJETO',
-  appId: 'COLOQUE_SEU_APP_ID'
-};
-const visitEl=document.getElementById('visitCount');
-const onlineEl=document.getElementById('onlineStatus');
-const onlineDot=document.getElementById('onlineDot');
-const isConfigured=Object.values(firebaseConfig).every(v=>v && !String(v).includes('COLOQUE_'));
-if(!isConfigured){
- onlineEl.textContent='Online indisponível: falta configurar o Firebase';
- onlineDot.classList.add('off');
- console.warn('ARQUIVO PT: configure firebaseConfig e as regras do Realtime Database para ativar os contadores globais.');
-}else{
- try{
-  const app=initializeApp(firebaseConfig);const db=getDatabase(app);
-  const visitsRef=ref(db,'arquivoPT/visitas');
-  const onlineRef=ref(db,'arquivoPT/online');
-  const {onValue:watchVisits}=await import('https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js');
-  onValue(visitsRef,snap=>{const n=Number(snap.val());if(Number.isFinite(n)&&n>=435)visitEl.textContent=n.toLocaleString('pt-BR')});
-  await runTransaction(visitsRef,current=>current===null?436:Number(current)+1);
-  const connectedRef=ref(db,'.info/connected');
-  onValue(connectedRef,async snap=>{
-   if(snap.val()!==true){onlineEl.textContent='Conectando…';onlineDot.classList.add('off');return}
-   const myPresence=push(onlineRef);
-   try{await onDisconnect(myPresence).remove();await set(myPresence,{connectedAt:serverTimestamp()});onlineEl.textContent='Você está online';onlineDot.classList.remove('off')}
-   catch(err){onlineEl.textContent='Online não disponível (verifique regras)';onlineDot.classList.add('off');console.error(err)}
-  });
-  onValue(onlineRef,snap=>{const count=snap.exists()?Object.keys(snap.val()).length:0;onlineEl.textContent=count===1?'1 pessoa online':`${count} pessoas online`;onlineDot.classList.toggle('off',count===0)});
- }catch(err){onlineEl.textContent='Contador indisponível — confira Firebase';onlineDot.classList.add('off');console.error('Falha no contador ARQUIVO PT:',err)}
-}
+<script>
+/* Contadores locais sem tela de configuração.
+   A visita começa em 435 neste navegador e é salva localmente.
+   Para contagem compartilhada entre todos os visitantes e total real de pessoas online,
+   é necessário um serviço de backend; este HTML estático não consegue medir isso sozinho. */
+(function(){
+  const visitEl = document.getElementById('visitCount');
+  const onlineEl = document.getElementById('onlineStatus');
+  const onlineDot = document.getElementById('onlineDot');
+  const KEY = 'arquivoPT_visitas_locais_v1';
+  let visits = 435;
+  try {
+    const saved = Number(localStorage.getItem(KEY));
+    visits = Number.isFinite(saved) && saved >= 435 ? saved : 435;
+    // Conta uma visita por sessão do navegador, evitando somar a cada atualização da página.
+    if (!sessionStorage.getItem('arquivoPT_visitou_sessao')) {
+      visits += 1;
+      localStorage.setItem(KEY, String(visits));
+      sessionStorage.setItem('arquivoPT_visitou_sessao', '1');
+    }
+  } catch (e) { /* armazenamento bloqueado: mantém o valor inicial */ }
+  visitEl.textContent = visits.toLocaleString('pt-BR');
+  // Rótulo visual solicitado. Sem backend compartilhado, não mede outras pessoas online.
+  onlineEl.textContent = 'PESQUISADORES ONLINE';
+  onlineDot.classList.remove('off');
+})();
 </script>
 </body></html>
