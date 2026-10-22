@@ -13,7 +13,7 @@
 <body>
 <header><div class="brand">ARQUIVO <span>PT</span></div><div class="edition">Dossiê público · Edição documental</div></header>
 <div class="livebar" aria-label="Estatísticas do site">
-  <div class="livepill"><span aria-hidden="true">↗</span> Visitas: <strong id="visitCount">435</strong></div>
+  <div class="livepill optistats-counter"><span aria-hidden="true">↗</span> Contador de visitas: <iframe src="https://counter6.optistats.ovh/private/webcontadores.php?c=gzbtkgt4sdfml4474634qt5qg2rlbg7q" title="Contador de visitas do ARQUIVO PT" loading="eager" referrerpolicy="strict-origin-when-cross-origin" scrolling="no" style="width:150px;height:34px;border:0;background:transparent;vertical-align:middle" ></iframe><noscript><a href="https://counter6.optistats.ovh/private/webcontadores.php?c=gzbtkgt4sdfml4474634qt5qg2rlbg7q" target="_blank" rel="noopener noreferrer">Ver contador de visitas</a></noscript></div>
   <div class="livepill"><span class="dot off" id="onlineDot"></span><span id="onlineStatus">Conectando ao contador online…</span></div>
   <button class="btn sharebtn" id="shareButton" type="button">COMPARTILHAR ↗</button>
 </div>
@@ -75,31 +75,5 @@ document.getElementById('shareButton').addEventListener('click',async()=>{
  try{if(navigator.share){await navigator.share(shareData)}else if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(shareData.url);alert('Link copiado! Pode compartilhar onde quiser.')}else{const t=document.createElement('textarea');t.value=shareData.url;document.body.appendChild(t);t.select();document.execCommand('copy');t.remove();alert('Link copiado! Pode compartilhar onde quiser.')}}catch(e){if(e.name!=='AbortError')alert('Não foi possível compartilhar automaticamente. Copie o link do navegador.')}
 });
 </script>
-<script>
-/* Contadores locais sem tela de configuração.
-   A visita começa em 435 neste navegador e é salva localmente.
-   Para contagem compartilhada entre todos os visitantes e total real de pessoas online,
-   é necessário um serviço de backend; este HTML estático não consegue medir isso sozinho. */
-(function(){
-  const visitEl = document.getElementById('visitCount');
-  const onlineEl = document.getElementById('onlineStatus');
-  const onlineDot = document.getElementById('onlineDot');
-  const KEY = 'arquivoPT_visitas_locais_v1';
-  let visits = 435;
-  try {
-    const saved = Number(localStorage.getItem(KEY));
-    visits = Number.isFinite(saved) && saved >= 435 ? saved : 435;
-    // Conta uma visita por sessão do navegador, evitando somar a cada atualização da página.
-    if (!sessionStorage.getItem('arquivoPT_visitou_sessao')) {
-      visits += 1;
-      localStorage.setItem(KEY, String(visits));
-      sessionStorage.setItem('arquivoPT_visitou_sessao', '1');
-    }
-  } catch (e) { /* armazenamento bloqueado: mantém o valor inicial */ }
-  visitEl.textContent = visits.toLocaleString('pt-BR');
-  // Rótulo visual solicitado. Sem backend compartilhado, não mede outras pessoas online.
-  onlineEl.textContent = 'PESQUISADORES ONLINE';
-  onlineDot.classList.remove('off');
-})();
-</script>
+
 </body></html>
